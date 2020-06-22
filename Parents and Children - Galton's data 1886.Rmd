@@ -1,0 +1,89 @@
+---
+title: "Parents and Children - Galton's data"
+author: "Emily Silva Araujo"
+date: "22/06/2020"
+output: slidy_presentation
+---
+
+## ***Reproducible Pitch Presentation***
+
+As a part of the Week 4 assignment of the **Developing Data Products** course, this presentation is intended to describe the *Shiny App* that I created.
+
+The presentation has been created in *RStudio* using *Slidify* and has been deployed to the *Shiny* server, as requested. It is accessible at https://rpubs.com/jmmiras/629541
+
+The code for the *Shiny App*, both the ui.R and server.R files, can be found on my github profile at: https://github.com/araujosemily/Galton-s-data
+
+The application can be found at http://araujosemily.shinyapps.io/Sons?_ga=2.182873381.2008732203.1592836417-717856172.1592836417
+
+## *Overview*
+
+The *Shiny App* employs the *Galton's data*, which consists of a table, showing a cross-tabulation of 928 adult children born to 205 fathers and mothers, by their height and their mid-parent's height. 
+
+The *Shiny App* predict heights of the sons as a function of the heights of their parents and fits a linear model.
+
+- The user can select a value of the parent heights from the slider to get the corresponding estimated children heights.
+- The submit button must be clicked to get a response
+- The fitted line can be displayed or not by clicking on the checkbox
+
+
+## *R code for preparing the Week 4 Assignment of the Developing Data Products course*
+
+### **Galton's data on the heights of parents and their children**
+
+### *Description*
+
+Galton (1886) presented these data in a table, showing a cross-tabulation of 928 adult children born to 205 fathers and mothers, by their height and their mid-parent's height. He visually smoothed the bivariate frequency distribution and showed that the contours formed concentric and similar ellipses, thus setting the stage for correlation, regression and the bivariate normal distribution.
+
+
+## The Galton's data on the heights of parents and their children
+
+```{r Galton, echo = TRUE}
+library(HistData)
+head(Galton)
+
+plot(Galton$parent, Galton$child, xlim = c(60, 74), ylim = c(60,74), xlab= "Parent's heights (inch)", ylab = "Children's heights (inch)", bty = "n", pch = 16)
+```
+
+
+### **The Server.R Code**
+
+```{r, echo = TRUE,warning=FALSE}
+# Define server logic required to draw a scatter plot
+
+library(shiny)
+library(HistData)
+
+shinyServer(function(input, output){
+    model1 <- lm(child ~ parent, data = Galton)
+    
+    model1pred <- reactive({
+        parentInput <- input$sliderparent
+        predict(model1, newdata = data.frame(parent = parentInput))
+    })
+    
+    output$plot1 <- renderPlot({
+        parentInput <- input$sliderparent
+        
+        plot(Galton$parent, Galton$child, xlim = c(60, 74), ylim = c(60,74), xlab= "Parent's heights (inch)", ylab = "Children's heights (inch)", bty = "n", pch = 16)
+        if(input$showModel1){
+            abline(model1, col = "red", lwd = 2)
+        }
+        
+        legend(1.5, 90, "Linear Model Prediction", col = c("red", "blue"), lwd = c(2,2), bty = "n", cex = 1.2)
+        points(parentInput, model1pred(), col = "red", pch = 16, cex = 1.6)
+    })
+    
+    output$pred1 <- renderText({
+        round(model1pred(),2)
+    })
+})
+
+```
+
+### *References*
+
+Galton, F. (1886). Regression Towards Mediocrity in Hereditary Stature Journal of the Anthropological Institute, 15, 246-263
+
+ **Thank you!!**
+
+**Emily Silva Araujo**
